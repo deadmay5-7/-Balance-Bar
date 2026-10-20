@@ -1,0 +1,47 @@
+{
+  "name": "dsh-balance-bar",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "在侧边栏品牌区下方显示 DeepSeek 余额、今日已用与峰谷时段",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "balance",
+    "sidebar"
+  ],
+  "license": "MIT",
+  "author": "dsh-balance-bar contributors",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "icon": "./icon.svg",
+  "meta": {
+    "title": "余额栏",
+    "description": "在侧边栏品牌区下方显示 DeepSeek 余额、今日已用与峰谷时段。"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar"
+      ]
+    }
+  }
+}

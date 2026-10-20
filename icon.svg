@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Balance bar">
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="#5686fe"/>
+  <circle cx="19" cy="21" r="3" fill="#bcd0ff"/>
+  <rect x="26" y="18" width="19" height="6" rx="3" fill="#eaf0ff"/>
+  <rect x="19" y="30" width="26" height="8" rx="4" fill="#ffffff"/>
+  <rect x="19" y="44" width="9" height="5" rx="2.5" fill="#bcd0ff"/>
+  <rect x="31" y="44" width="6" height="5" rx="2.5" fill="#bcd0ff"/>
+  <rect x="40" y="44" width="6" height="5" rx="2.5" fill="#bcd0ff"/>
+</svg>
