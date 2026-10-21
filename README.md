@@ -1,4 +1,4 @@
-# -Balance-Bar
+# 💰 余额栏
 🐳 在 DSH Web 界面左侧边栏插入一个纯文字的余额信息块
 ```
 余额: 9.42￥
@@ -12,7 +12,7 @@
 
 ### ✨ 这是什么
 
-余额栏是 DSH（DeepSeek Harness）Web 界面的侧边栏插件 🐳。它在「DeepSeek」品牌区下方显示三行信息：账户余额、今日已用与 token 用量、当前峰谷时段与切换倒计时 ⏱️。
+余额栏是 DSH（DeepSeek Harness）的侧边栏插件 🐳，**网页端和桌面客户端都可用**。它在「DeepSeek」品牌区下方显示三行信息：账户余额、今日花费与 token 用量、当前峰谷时段与切换倒计时 ⏱️。
 
 🚫 不使用进度条，不注册 slot，不修改宿主 CSS，也不删除任何宿主节点。
 
@@ -59,6 +59,8 @@
 
 📏 今日花费是按 token 的**估算值**：因为每条请求都按当时的价格计价，中途切换模型或跨过峰谷边界都不会算错。实测同一天估算 ¥12.79、账户实际扣减 ¥12.76，误差约 0.2%。
 
+0️⃣ **今天没有消耗时显示 `¥0.00` 和 `0 tok`**（而不是 `—`）；只有日志扫描尚未完成的那一小会儿才显示 `—`，扫描完成后会自动补上真实数字。
+
 🔒 该接口只返回聚合数字，不暴露凭证、原始日志或单条事件。
 
 🛟 未登录 DeepSeek 账号、或账户查询失败时，余额显示 `—`，失败原因放在 `title` 属性里而不是挤进界面 🙈；峰谷与今日 token 仍会正常显示。
@@ -85,7 +87,15 @@ npm install -g dsh-balance-bar
 # 或在 DSH 插件管理里安装 npm 包名 dsh-balance-bar
 ```
 
-**🥈 方式二：本地目录**
+**🥈 方式二：从 GitHub 安装**
+
+```powershell
+dsh plugin --profile desktop add github:deadmay5-7/-Balance-Bar
+```
+
+或直接在 DSH 插件管理里粘贴仓库地址：<https://github.com/deadmay5-7/-Balance-Bar>
+
+**🥉 方式三：本地目录**
 
 ```powershell
 dsh plugin --profile desktop add link:D:\Plugins\dsh-balance-bar
@@ -95,17 +105,17 @@ dsh plugin --profile desktop add link:D:\Plugins\dsh-balance-bar
 
 ### 🗑️ 卸载
 
-```powershell
-dsh plugin --profile desktop remove dsh-balance-bar
-```
+打开 DSH 的 **插件** 页面，进入「已安装插件」列表，找到 **余额栏** 这一行，在它右侧的 **详细信息** 里点 **卸载** 即可。
+
+> 💡 也可以直接在该插件的详情页关闭开关来停用，无需卸载。
 
 ---
 
-## 🇬🇧 English
+## EN English
 
 ### ✨ What it is
 
-Balance Bar is a sidebar plugin 🐳 for the DSH (DeepSeek Harness) Web GUI. It shows three lines under the "DeepSeek" brand row: the account balance, today's spend with token usage, and the current peak / off-peak period with a countdown to the next switch ⏱️.
+Balance Bar is a sidebar plugin 🐳 for DSH (DeepSeek Harness), working in **both the web UI and the desktop client**. It shows three lines under the "DeepSeek" brand row: the account balance, today's spend with token usage, and the current peak / off-peak period with a countdown to the next switch ⏱️.
 
 🚫 No progress bar, no slot registration, no host CSS overrides, and no host nodes are removed.
 
@@ -152,6 +162,8 @@ Balance Bar is **self-contained — it does not depend on any other plugin** �
 
 📏 Today's spend is a **token-based estimate**: because every request is priced at the rate in effect at that moment, switching models or crossing a peak boundary mid-day never distorts it. Measured on one day: estimated ¥12.79 vs. an actual account debit of ¥12.76, about 0.2% off.
 
+0️⃣ **When nothing was consumed today, the bar shows `¥0.00` and `0 tok`** (not `—`); `—` only appears for the moment before the first log scan finishes, and the real numbers replace it automatically.
+
 🔒 The route returns aggregates only — never credentials, raw logs, or individual events.
 
 🛟 If you are signed out or the account query fails, the balance shows `—` and the reason goes into the `title` attribute instead of the layout 🙈, while the period and token count keep working.
@@ -178,7 +190,15 @@ npm install -g dsh-balance-bar
 # or install the npm package name dsh-balance-bar from the DSH plugin manager
 ```
 
-**🥈 Option 2: local directory**
+**🥈 Option 2: install from GitHub**
+
+```powershell
+dsh plugin --profile desktop add github:deadmay5-7/-Balance-Bar
+```
+
+Or paste the repository URL directly into the DSH plugin manager: <https://github.com/deadmay5-7/-Balance-Bar>
+
+**🥉 Option 3: local directory**
 
 ```powershell
 dsh plugin --profile desktop add link:D:\Plugins\dsh-balance-bar
@@ -188,9 +208,9 @@ dsh plugin --profile desktop add link:D:\Plugins\dsh-balance-bar
 
 ### 🗑️ Uninstall
 
-```powershell
-dsh plugin --profile desktop remove dsh-balance-bar
-```
+Open the DSH **Plugins** page, go to the installed plugins list, find the **Balance Bar** row, open its **details**, and click **Uninstall**.
+
+> 💡 You can also just toggle it off in its detail page to disable it without uninstalling.
 
 ---
 
@@ -202,5 +222,7 @@ dsh plugin --profile desktop remove dsh-balance-bar
 ---
 
 ## ⭐ 觉得好用？点个 Star 吧！
+
 如果你觉得这个插件好用，请顺手点一个 Star✨，谢谢！
-> If you find this plugin useful, a Star ✨ would mean a lot — thank you! 
+
+> If you find this plugin useful, a Star ✨ would mean a lot — thank you! 💙
