@@ -2,13 +2,14 @@
   "name": "dsh-balance-bar",
   "version": "1.0.0",
   "type": "module",
-  "description": "在侧边栏品牌区下方显示 DeepSeek 余额、今日已用与峰谷时段",
+  "description": "在 DSH 网页端与桌面客户端的侧边栏显示 DeepSeek 余额、今日花费与峰谷时段",
   "keywords": [
     "dsh",
     "dsh-plugin",
     "deepseek-harness",
     "balance",
-    "sidebar"
+    "sidebar",
+    "desktop"
   ],
   "license": "MIT",
   "author": "dsh-balance-bar contributors",
@@ -30,7 +31,7 @@
   "icon": "./icon.svg",
   "meta": {
     "title": "余额栏",
-    "description": "在侧边栏品牌区下方显示 DeepSeek 余额、今日已用与峰谷时段。"
+    "description": "在 DSH 网页端与桌面客户端的侧边栏显示 DeepSeek 余额、今日花费与峰谷时段。"
   },
   "dsh": {
     "bundle": {

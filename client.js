@@ -11,13 +11,11 @@ window.__ModuleLoader__.load({
   factory() {
     const STYLE_ID = 'dsh-balance-bar-style'
     const MARKER = 'data-my-balance-attach'
-    const BALANCE_SOURCES = [
-      { balance: '/dsh-whale/balance.json', lastTurn: '/dsh-whale/last-turn.json' },
-      { balance: '/dsh-xiaoke/balance.json', lastTurn: '/dsh-xiaoke/last-turn.json' },
-    ]
-    const USAGE_URL = '/dsh-balance-bar/usage.json'
+    // 单一数据源：本插件的宿主半。余额来自 DSH 账户服务，峰谷由宿主按官方规则计算，
+    // 今日 token 由宿主持久化日志汇总 —— 不再依赖 dsh-whale-widget / dsh-xiaoke-widget。
+    const DATA_URL = '/dsh-balance-bar/usage.json'
     const REFRESH_MS = 60_000
-    const REQUEST_TIMEOUT_MS = 10_000
+    const REQUEST_TIMEOUT_MS = 20_000
     const BEIJING_CLOCK = new Intl.DateTimeFormat('zh-CN', {
       timeZone: 'Asia/Shanghai',
       hour: '2-digit',
@@ -227,6 +225,7 @@ window.__ModuleLoader__.load({
       let countdownTimer = null
       let countdownExpiredAt = 0
       let ensureTimer = null
+      let quickTimer = null
       let inFlight = false
       let controller = null
       let timeoutTimer = null
@@ -238,6 +237,7 @@ window.__ModuleLoader__.load({
         isPeak: null,
         nextChangeAt: null,
         todayTokens: null,
+        todayScanned: false,
         tokens: null,
         error: '',
       }
@@ -339,8 +339,11 @@ window.__ModuleLoader__.load({
         amount.textContent = balanceText
         amount.dataset.tone = state.balance === null ? 'normal' : state.balance <= 1 ? 'danger' : state.balance <= 5 ? 'warn' : 'normal'
 
-        today.textContent = `${t('today')} ${formatMoney(state.todayUsage)}`
-        tokens.textContent = state.tokens === null ? '\u2014' : `${formatTokens(state.tokens)} ${t('tokenUnit')}`
+        // 今日花费：扫描已完成但没有记录时显示 ¥0.00；扫描尚未完成才显示「—」。
+        const todayCost = state.todayScanned && state.todayUsage === null ? 0 : state.todayUsage
+        const todayTokens = state.todayScanned && state.tokens === null ? 0 : state.tokens
+        today.textContent = `${t('today')} ${formatMoney(todayCost)}`
+        tokens.textContent = todayTokens === null ? '\u2014' : `${formatTokens(todayTokens)} ${t('tokenUnit')}`
         tokens.title = ''
 
         if (state.isPeak === true) {
@@ -358,7 +361,7 @@ window.__ModuleLoader__.load({
         const switchText = switchEl.textContent
 
         root.title = state.error
-        const tokenText = state.tokens === null ? '\u2014' : `${formatTokens(state.tokens)} ${t('tokenUnit')}`
+        const tokenText = todayTokens === null ? '\u2014' : `${formatTokens(todayTokens)} ${t('tokenUnit')}`
         const switchSuffix = switchText === '' ? '' : ` ${switchText}`
         root.setAttribute('aria-label', `${t('balance')} ${balanceText}, ${t('today')} ${formatMoney(state.todayUsage)}, ${tokenText}, ${peak.textContent}${switchSuffix}`)
       }
@@ -397,80 +400,37 @@ window.__ModuleLoader__.load({
         controller = new AbortController()
         timeoutTimer = window.setTimeout(() => controller && controller.abort(), REQUEST_TIMEOUT_MS)
         try {
-          const [balanceResults, lastTurnResults, usageResults] = await Promise.all([
-            Promise.allSettled(BALANCE_SOURCES.map((source) => fetchJson(source.balance, controller.signal))),
-            Promise.allSettled(BALANCE_SOURCES.map((source) => fetchJson(source.lastTurn, controller.signal))),
-            Promise.allSettled([fetchJson(USAGE_URL, controller.signal)]),
-          ])
+          const result = await Promise.allSettled([fetchJson(DATA_URL, controller.signal)])
           if (disposed) return
+          const response = result[0]
+          const data = response.status === 'fulfilled' ? response.value : null
 
-          const usageResult = usageResults[0]
-          const candidates = balanceResults
-            .filter((result) => result.status === 'fulfilled' && result.value && result.value.ok !== false)
-            .map((result) => result.value)
-            .filter((value) => toFiniteNumber(value.balance) !== null || toFiniteNumber(value.totalBalance) !== null)
-            .sort((a, b) => {
-              const aTime = Date.parse(a.updatedAt || '')
-              const bTime = Date.parse(b.updatedAt || '')
-              return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0)
-            })
-
-          state.error = ''
-          const chosen = candidates[0]
-          if (chosen) {
-            const balance = toFiniteNumber(chosen.balance)
-            state.balance = balance !== null ? balance : toFiniteNumber(chosen.totalBalance)
-            state.todayUsage = toFiniteNumber(chosen.todayUsage)
-            state.isPeak = typeof chosen.isPeak === 'boolean' ? chosen.isPeak : null
-            state.nextChangeAt = toFiniteNumber(chosen.peakNextChangeAt)
-
-            if (state.todayUsage === null) {
-              const alternate = candidates.find((value) => toFiniteNumber(value.todayUsage) !== null)
-              if (alternate) state.todayUsage = toFiniteNumber(alternate.todayUsage)
-            }
-            if (state.isPeak === null) {
-              const alternate = candidates.find((value) => typeof value.isPeak === 'boolean')
-              if (alternate) state.isPeak = alternate.isPeak
-            }
-            if (state.nextChangeAt === null) {
-              const alternate = candidates.find((value) => toFiniteNumber(value.peakNextChangeAt) !== null)
-              if (alternate) state.nextChangeAt = toFiniteNumber(alternate.peakNextChangeAt)
-            }
+          if (data && typeof data === 'object') {
+            // 余额：宿主已经从 DSH 账户服务取到；ok:false 表示未登录或查询失败。
+            const balance = toFiniteNumber(data.balance)
+            state.balance = data.ok === true && balance !== null ? balance : null
+            state.error = data.ok === true ? '' : String(data.error || '\u4F59\u989D\u4E0D\u53EF\u7528')
+            // 峰谷：宿主按官方规则算好，前端不再推算。
+            state.isPeak = typeof data.isPeak === 'boolean' ? data.isPeak : null
+            state.nextChangeAt = toFiniteNumber(data.peakNextChangeAt)
+            // 今日累计 token 与花费：宿主汇总本机会话日志并按当时价格计费。
+            state.todayTokens = toFiniteNumber(data.todayTokens)
+            state.tokens = state.todayTokens
+            state.todayUsage = toFiniteNumber(data.todayUsage)
+            // 扫描完成（非 pending）才允许把「没有记录」显示成 0。
+            state.todayScanned = data.todayPending !== true
+            // 首次扫描尚未完成 → 稍后快速重试，不能当成「今天没用过」显示 0。
+            if (data.todayPending === true) scheduleQuickRefresh()
           } else {
             state.balance = null
             state.todayUsage = null
             state.isPeak = null
             state.nextChangeAt = null
-            const failures = balanceResults.filter((result) => !(result.status === 'fulfilled' && result.value && result.value.ok !== false && (toFiniteNumber(result.value.balance) !== null || toFiniteNumber(result.value.totalBalance) !== null)))
-            state.error = failures.length > 0 ? failureText(failures[failures.length - 1]) : '\u4F59\u989D\u63A5\u53E3\u8FD4\u56DE\u4E86\u65E0\u6CD5\u8BC6\u522B\u7684\u6570\u636E'
+            state.todayTokens = null
+            state.todayScanned = false
+            state.tokens = null
+            state.error = response.status === 'rejected' ? failureText(response) : '\u4F59\u989D\u63A5\u53E3\u8FD4\u56DE\u4E86\u65E0\u6CD5\u8BC6\u522B\u7684\u6570\u636E'
           }
-
-          if (usageResult.status === 'fulfilled' && usageResult.value && usageResult.value.ok === true) {
-            const count = toFiniteNumber(usageResult.value.events)
-            const value = toFiniteNumber(usageResult.value.tokens)
-            if (count !== null && count > 0 && value !== null) state.todayTokens = value
-          }
-
-          // 「今日 ￥X · N tok」的 N 必须与左边的金额同口径：今日累计。
-          // 以前优先显示最后一轮 token 再被今日累计覆盖，同一个位置在两种数字之间来回跳，
-          // 看起来就是「随时都在变」。现在固定显示今日累计；拿不到累计时依次退回
-          // 余额源自带的今日 token、最后一轮 token，保证不会空白。
-          const reportedTodayTokens = chosen ? toFiniteNumber(chosen.todayTokens) : null
-          let lastTurnTokens = null
-          for (const result of lastTurnResults) {
-            if (result.status === 'fulfilled' && result.value && result.value.ok !== false) {
-              const value = toFiniteNumber(result.value.tokens)
-              if (value !== null) {
-                lastTurnTokens = value
-                break
-              }
-            }
-          }
-          state.tokens = state.todayTokens !== null
-            ? state.todayTokens
-            : reportedTodayTokens !== null
-              ? reportedTodayTokens
-              : lastTurnTokens
 
           render()
         } finally {
@@ -481,6 +441,15 @@ window.__ModuleLoader__.load({
           controller = null
           inFlight = false
         }
+      }
+
+      /** 首次日志扫描未完成时，短暂等待后立即重试，而不是等到 60 秒后的常规轮询。 */
+      function scheduleQuickRefresh() {
+        if (disposed || quickTimer !== null) return
+        quickTimer = window.setTimeout(() => {
+          quickTimer = null
+          if (!disposed && !doc.hidden) refresh()
+        }, 2500)
       }
 
       function startInterval() {
@@ -555,6 +524,10 @@ window.__ModuleLoader__.load({
         if (ensureTimer !== null) {
           window.clearTimeout(ensureTimer)
           ensureTimer = null
+        }
+        if (quickTimer !== null) {
+          window.clearTimeout(quickTimer)
+          quickTimer = null
         }
         if (timeoutTimer !== null) {
           window.clearTimeout(timeoutTimer)
