@@ -7,7 +7,7 @@
  * No Harness Client UI package is imported.
  */
 window.__ModuleLoader__.load({
-  id: 'dsh-balance-bar',
+  id: 'dsh-balance-bar-npm',
   factory() {
     const STYLE_ID = 'dsh-balance-bar-style'
     const MARKER = 'data-my-balance-attach'

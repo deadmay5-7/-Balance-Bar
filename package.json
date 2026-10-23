@@ -1,5 +1,5 @@
 {
-  "name": "dsh-balance-bar",
+  "name": "dsh-balance-bar-npm",
   "version": "1.0.0",
   "type": "module",
   "description": "在 DSH 网页端与桌面客户端的侧边栏显示 DeepSeek 余额、今日花费与峰谷时段",
