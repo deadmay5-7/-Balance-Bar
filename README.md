@@ -1,5 +1,9 @@
 # 💰 余额栏
-🐳 在 DSH Web 界面左侧边栏插入一个纯文字的余额信息块
+
+> 🐳 在 DSH 的左侧边栏插入一个纯文字的余额信息块，位置在品牌区「DeepSeek」下方、新建对话按钮上方。
+> **网页端与桌面客户端都能用**：两者渲染的是同一个 Web 界面，插件一次安装即在两端生效。
+> A plain-text balance block for the DSH sidebar, placed between the brand row and the new-session button — available on **both the web UI and the desktop client**.
+
 ```
 余额: 9.42￥
 今日 ¥12.85 · 487,165,184 tok
@@ -83,8 +87,8 @@
 **🥇 方式一：npm 包（推荐）**
 
 ```powershell
-npm install -g dsh-balance-bar
-# 或在 DSH 插件管理里安装 npm 包名 dsh-balance-bar
+npm install -g dsh-balance-bar-npm
+# 或在 DSH 插件管理里安装 npm 包名 dsh-balance-bar-npm
 ```
 
 **🥈 方式二：从 GitHub 安装**
@@ -186,8 +190,8 @@ Balance Bar is **self-contained — it does not depend on any other plugin** �
 **🥇 Option 1: npm package (recommended)**
 
 ```powershell
-npm install -g dsh-balance-bar
-# or install the npm package name dsh-balance-bar from the DSH plugin manager
+npm install -g dsh-balance-bar-npm
+# or install the npm package name dsh-balance-bar-npm from the DSH plugin manager
 ```
 
 **🥈 Option 2: install from GitHub**
